@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Fanz</title>
+
+<style>
+:root{
+--bg:#0f172a;
+--card:#1e293b;
+--text:#fff;
+--cyan:#06b6d4;
+}
+.light{
+--bg:#f1f5f9;
+--card:#ffffff;
+--text:#0f172a;
+}
+body{
+margin:0;
+font-family:Arial;
+background:var(--bg);
+color:var(--text);
+padding:10px;
+}
+header{
+background:var(--cyan);
+padding:15px;
+text-align:center;
+font-weight:bold;
+color:#000;
+border-radius:10px;
+}
+.section{
+margin-top:15px;
+}
+.columns{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+}
+.card{
+background:var(--card);
+padding:8px;
+border-radius:8px;
+margin-top:5px;
+text-align:center;
+cursor:pointer;
+border:2px solid transparent;
+}
+.card:hover{
+border:2px solid var(--cyan);
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+margin-top:10px;
+}
+input,select,button{
+width:100%;
+padding:8px;
+margin-top:8px;
+border-radius:8px;
+border:none;
+}
+button{
+background:var(--cyan);
+font-weight:bold;
+cursor:pointer;
+}
+.summary{
+background:var(--card);
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+font-size:14px;
+}
+.hidden{display:none;}
+.topbar{
+display:flex;
+justify-content:space-between;
+margin-top:10px;
+font-size:13px;
+}
+</style>
+</head>
+<body>
+
+<header>MARKET FANZ RIZKY</header>
+
+<div class="topbar">
+<div id="datetime"></div>
+<button onclick="toggleMode()">Mode</button>
+</div>
+
+<div class="section">
+<h3>Pilih Produk</h3>
+<div class="columns">
+
+<div>
+<b>GAME</b>
+<div class="card" onclick="render('ml')">Mobile Legends</div>
+<div class="card" onclick="render('ff')">Free Fire</div>
+<div class="card" onclick="render('pubg')">PUBG</div>
+<div class="card" onclick="render('codm')">CODM</div>
+<div class="card" onclick="render('genshin')">Genshin</div>
+<div class="card" onclick="render('hsr')">HSR</div>
+<div class="card" onclick="render('roblox')">Roblox</div>
+<div class="card" onclick="render('higgs')">Higgs</div>
+</div>
+
+<div>
+<b>PULSA</b>
+<div class="card" onclick="render('telkomsel')">Telkomsel</div>
+<div class="card" onclick="render('xl')">XL</div>
+<div class="card" onclick="render('axis')">Axis</div>
+<div class="card" onclick="render('indosat')">Indosat</div>
+<div class="card" onclick="render('tri')">Tri</div>
+</div>
+
+<div>
+<b>E-WALLET</b>
+<div class="card" onclick="render('dana')">DANA</div>
+<div class="card" onclick="render('ovo')">OVO</div>
+<div class="card" onclick="render('gopay')">GOPAY</div>
+<div class="card" onclick="render('shopeepay')">ShopeePay</div>
+<div class="card" onclick="render('steam')">Steam</div>
+</div>
+
+</div>
+</div>
+
+<div id="produk" class="grid"></div>
+
+<input type="text" id="target" placeholder="Masukkan ID / Nomor">
+
+<select id="payment">
+<option value="DANA">DANA</option>
+<option value="OVO">OVO</option>
+<option value="GOPAY">GOPAY</option>
+<option value="QRIS">QRIS</option>
+<option value="CASH">CASH</option>
+</select>
+
+<select id="member">
+<option value="0">Regular</option>
+<option value="3">Member Silver (3%)</option>
+<option value="5">Member Gold (5%)</option>
+</select>
+
+<div class="summary" id="summary"></div>
+
+<button onclick="prepareOrder()">Pesan Sekarang</button>
+
+<div id="contactBox" class="hidden">
+<h4>Pilih Kontak:</h4>
+<button onclick="sendWA('6287795237332')">WhatsApp 1</button>
+<button onclick="sendWA('6287856855898')">WhatsApp 2</button>
+<button onclick="sendTG()">Telegram</button>
+</div>
+
+<script>
+
+const FEE={DANA:500,OVO:500,GOPAY:500,QRIS:500,CASH:500};
+let selected=null;
+let currentCategory="";
+let finalText="";
+
+const DATA = { /* DATA SAMA PERSIS SEPERTI YANG KAMU KIRIM + TAMBAHAN */
+ml:[["5 DM",1500],["12 DM",3500],["28 DM",8000],["36 DM",10000],["56 DM",15000],["85 DM",22500],["100 DM",26000],["144 DM",38000],["170 DM",45500],["240 DM",63000],["355 DM",93000],["425 DM",112000],["514 DM",132000],["712 DM",183000],["875 DM",217000],["1050 DM",265500],["1220 DM",309000],["1453 DM",371000],["1750 DM",441000],["2180 DM",524000],["2578 DM",625000],["4020 DM",961000],["7660 DM",1839000],["WDP",29500],["Twilight Pass",146500],["Starlight Mem Plus",195500]],
+ff:[["5 Diamond",500],["12 Diamond",1500],["20 Diamond",3000],["30 Diamond",4000],["50 Diamond",7000],["70 Diamond",9000],["100 Diamond",13000],["140 Diamond",19000],["150 Diamond",21000],["210 Diamond",27000],["355 Diamond",48000],["425 Diamond",56000],["500 Diamond",68000],["720 Diamond",95000],["860 Diamond",112000],["1000 Diamond",135000],["1075 Diamond",145000],["1440 Diamond",190000],["1450 Diamond",192000],["2000 Diamond",260000],["2180 Diamond",285000],["3640 Diamond",470000],["7290 Diamond",930000],["Membership Mingguan",28500],["Membership Bulanan",81500],["BP Card",41500]],
+pubg:[["60 UC",15000],["325 UC",75000],["660 UC",155000]],
+codm:[["80 CP",15000],["420 CP",75000],["880 CP",145000]],
+genshin:[["60 GC",15000],["300 GC",75000],["980 GC",230000]],
+hsr:[["60 Jade",15000],["300 Jade",75000]],
+roblox:[["80 Robux",15000],["400 Robux",75000]],
+higgs:[["1B Chip",15000],["2B Chip",30000]],
+telkomsel:[["5K",6500],["10K",11500],["15K",16500],["20K",21000],["25K",26000],["30K",31500],["40K",41500],["50K",51000],["60K",61500],["70K",71500],["80K",81500],["100K",102000],["150K",152000],["200K",202000]],
+xl:[["5K",6500],["10K",11500],["15K",16500],["25K",26500],["30K",31500],["40K",41500],["50K",51500],["70K",71500],["80K",81500],["100K",101000],["150K",151500],["200K",202000]],
+axis:[["5K",6500],["10K",11500],["15K",16500],["25K",26500],["30K",31500],["40K",41500],["50K",51500],["100K",101000],["150K",151500],["200K",202000]],
+indosat:[["5K",7000],["10K",12000],["15K",16000],["20K",21000],["25K",25500],["30K",31000],["40K",41000],["50K",51000],["70K",71000],["80K",81000],["90K",91000],["100K",101000]],
+tri:[["5K",6500],["10K",11500],["15K",16000],["20K",21000],["25K",26000],["30K",31500],["40K",41500],["50K",51000],["70K",71500],["90K",91500],["100K",102000],["125K",127000],["150K",152000],["200K",202000]],
+steam:[["IDR 12K",15000],["IDR 45K",50000]],
+dana:[["1K",1500],["2K",2500],["3K",3500],["4K",4500],["5K",5500],["10K",10500],["15K",15500],["20K",20500],["25K",26500],["30K",31500],["40K",41500],["50K",51500],["60K",61500],["70K",71500],["80K",81500],["90K",91500],["100K",102500],["125",127500],["150K",152500],["200K",202000]],
+ovo:[["10K",11500],["15K",16500],["20K",21500],["25K",26500],["30K",31500],["40K",41500],["50K",51500],["60K",61500],["70K",71500],["80K",81500],["90K",91500],["100K",102500],["125",127500],["150K",152500],["200K",202000]],
+gopay:[["10K",11500],["15K",16500],["20K",21500],["25K",26500],["30K",31500],["40K",41500],["50K",51500],["60K",61500],["70K",71500],["80K",81500],["90K",91500],["100K",102500],["125",127500],["150K",152500],["200K",202000]],
+shopeepay:[["10K",11500],["15K",16500],["20K",21500],["25K",26500],["30K",31500],["40K",41500],["50K",51500],["60K",61500],["70K",71500],["80K",81500],["90K",91500],["100K",102500],["125",127500],["150K",152500],["200K",202000]]
+};
+
+function render(key){
+currentCategory=key;
+let html="";
+DATA[key].forEach(item=>{
+html+=`<div class="card" onclick="selectItem('${item[0]}',${item[1]},this)">
+${item[0]}<br>Rp ${item[1].toLocaleString()}
+</div>`;
+});
+document.getElementById("produk").innerHTML=html;
+}
+
+function selectItem(name,price,el){
+document.querySelectorAll(".grid .card").forEach(c=>c.style.border="2px solid transparent");
+el.style.border="2px solid var(--cyan)";
+selected={name,price};
+updateSummary();
+}
+
+function updateSummary(){
+if(!selected) return;
+let pay=document.getElementById("payment").value;
+let diskon=0;
+if(currentCategory=="ml"||currentCategory=="ff"){
+diskon=selected.price*(document.getElementById("member").value/100);
+}
+let total=(selected.price-diskon)+FEE[pay];
+document.getElementById("summary").innerHTML=
+`Produk: ${selected.name}<br>
+Harga: Rp ${selected.price.toLocaleString()}<br>
+Diskon: Rp ${Math.floor(diskon).toLocaleString()}<br>
+Fee: Rp ${FEE[pay]}<br>
+<b>Total: Rp ${Math.floor(total).toLocaleString()}</b>`;
+}
+
+function isMaintenanceTime(){
+const now=new Date();
+const h=now.getHours();
+const m=now.getMinutes();
+if(h===23) return true;
+if(h===0 && m<=30) return true;
+return false;
+}
+
+function prepareOrder(){
+if(isMaintenanceTime()){alert("Maintenance 23:00 - 00:30 WIB");return;}
+if(!selected) return alert("Pilih produk dulu!");
+let target=document.getElementById("target").value.trim();
+if(target.length<5) return alert("ID tidak valid!");
+let pay=document.getElementById("payment").value;
+let diskon=selected.price*(document.getElementById("member").value/100);
+let total=(selected.price-diskon)+FEE[pay];
+finalText=`ORDER TOPUP
+Produk: ${selected.name}
+ID: ${target}
+Payment: ${pay}
+Total: Rp ${Math.floor(total).toLocaleString()}`;
+document.getElementById("contactBox").classList.remove("hidden");
+}
+
+function sendWA(no){window.open(`https://wa.me/${no}?text=${encodeURIComponent(finalText)}`);}
+function sendTG(){window.open(`https://t.me/fanzofficial32?text=${encodeURIComponent(finalText)}`);}
+function toggleMode(){document.body.classList.toggle("light");}
+function updateDateTime(){document.getElementById("datetime").innerHTML=new Date().toLocaleString("id-ID");}
+setInterval(updateDateTime,1000);updateDateTime();
+
+</script>
+</body>
+</html>
